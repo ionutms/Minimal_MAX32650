@@ -71,6 +71,18 @@
         "record_output": true
       },
       "type": "special_execute"
+    },
+    {
+      "description": "",
+      "id": "6c3414bb-dc12-4b67-a295-3b72cab0a054",
+      "settings": {
+        "command": "kicad-cli sch export pdf minimal_max32650.kicad_sch -o docs\\schematics\\minimal_max32650.pdf -t gruvbox",
+        "description": "",
+        "ignore_exit_code": false,
+        "output_filename": "export_schematics_pdf.log",
+        "record_output": true
+      },
+      "type": "special_execute"
     }
   ],
   "meta": {
@@ -100,6 +112,17 @@
       ],
       "settings": {
         "output_path": "${KIPRJMOD}\\docs\\pictures"
+      },
+      "type": "folder"
+    },
+    {
+      "description": "",
+      "id": "649f5bd6-0261-4341-b577-d3b76f1f29c7",
+      "only": [
+        "6c3414bb-dc12-4b67-a295-3b72cab0a054"
+      ],
+      "settings": {
+        "output_path": "${KIPRJMOD}\\docs\\schematics"
       },
       "type": "folder"
     }
