@@ -11344,6 +11344,16 @@
 	)
 	(wire
 		(pts
+			(xy 232.41 190.5) (xy 241.3 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5f1ffe2d-a25a-4ce2-821a-462023dfd9e3")
+	)
+	(wire
+		(pts
 			(xy 54.61 218.44) (xy 57.15 218.44)
 		)
 		(stroke
@@ -11451,6 +11461,16 @@
 			(type default)
 		)
 		(uuid "68d91db3-aa5d-408c-86c0-2ac61d1929fe")
+	)
+	(wire
+		(pts
+			(xy 232.41 200.66) (xy 241.3 200.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6952bac3-2cce-4ccc-be3c-ac36a5b7bfbd")
 	)
 	(wire
 		(pts
@@ -11631,6 +11651,16 @@
 			(type default)
 		)
 		(uuid "6ffa829b-5481-4b63-bd35-2b72d64b698b")
+	)
+	(wire
+		(pts
+			(xy 232.41 198.12) (xy 241.3 198.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "706c7ebb-bb2c-4691-8a75-ab8ba2c32c11")
 	)
 	(bus
 		(pts
@@ -12344,6 +12374,16 @@
 	)
 	(wire
 		(pts
+			(xy 232.41 195.58) (xy 241.3 195.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9b5252ad-afdc-4af9-9814-776f2f5d0074")
+	)
+	(wire
+		(pts
 			(xy 341.63 101.6) (xy 349.25 101.6)
 		)
 		(stroke
@@ -12604,6 +12644,16 @@
 	)
 	(wire
 		(pts
+			(xy 232.41 185.42) (xy 241.3 185.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a9b4fea3-c412-4d68-a970-7047b346d97d")
+	)
+	(wire
+		(pts
 			(xy 189.23 50.8) (xy 191.77 50.8)
 		)
 		(stroke
@@ -12781,6 +12831,16 @@
 			(type default)
 		)
 		(uuid "b21ed05d-252b-4768-b4ce-be09554f04e4")
+	)
+	(wire
+		(pts
+			(xy 232.41 241.3) (xy 241.3 241.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b257f020-de61-4c89-b21f-401eaa3dd79c")
 	)
 	(wire
 		(pts
@@ -12984,6 +13044,26 @@
 	)
 	(wire
 		(pts
+			(xy 232.41 193.04) (xy 241.3 193.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bc9032e4-269f-45b0-abbe-d6a53af2caa0")
+	)
+	(wire
+		(pts
+			(xy 232.41 205.74) (xy 241.3 205.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bcd85417-f844-4ab1-ad22-39d1cdf4f940")
+	)
+	(wire
+		(pts
 			(xy 232.41 25.4) (xy 234.95 25.4)
 		)
 		(stroke
@@ -13011,6 +13091,16 @@
 			(type default)
 		)
 		(uuid "bea433d9-c162-4ecb-b665-3a8ebdf7e552")
+	)
+	(wire
+		(pts
+			(xy 232.41 187.96) (xy 241.3 187.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bee58a72-425a-4d01-9816-290f662821d3")
 	)
 	(bus
 		(pts
@@ -13071,6 +13161,16 @@
 			(type default)
 		)
 		(uuid "c45a2b6f-6b5f-43c1-97b9-f81c7963622d")
+	)
+	(wire
+		(pts
+			(xy 232.41 243.84) (xy 241.3 243.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c5501570-53f7-483d-be22-b76d1e42c6db")
 	)
 	(wire
 		(pts
@@ -13351,6 +13451,16 @@
 			(type default)
 		)
 		(uuid "d54938ec-8fc5-4f2d-9c68-c781cb44268d")
+	)
+	(wire
+		(pts
+			(xy 232.41 228.6) (xy 241.3 228.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d5a7e601-5ca9-44e8-a2ce-50394ef8de84")
 	)
 	(wire
 		(pts
@@ -15165,6 +15275,77 @@
 		)
 	)
 	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 228.6 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "0970ffb6-fcb6-493d-b9a2-927b1f99d081")
+		(property "Reference" "TP2"
+			(at 246.38 228.5999 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "581f6fe4-4e9e-4578-ac21-4f722620aa4c")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 353.06 222.25 0)
 		(unit 1)
@@ -16058,6 +16239,77 @@
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
 					(reference "R5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 185.42 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1bc2a655-0a7d-40ad-9f7d-15e253fbe619")
+		(property "Reference" "TP16"
+			(at 246.38 185.4199 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fe073443-df79-49a7-b9a7-f093e6a34a00")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP16")
 					(unit 1)
 				)
 			)
@@ -17081,7 +17333,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2997242d-2403-4a54-87a6-da895b6f3c3b")
-		(property "Reference" "TP3"
+		(property "Reference" "TP11"
 			(at 246.38 175.2599 90)
 			(effects
 				(font
@@ -17136,7 +17388,78 @@
 		(instances
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP3")
+					(reference "TP11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 190.5 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "29b41d86-fdc0-4f49-9352-4147c32d95ee")
+		(property "Reference" "TP8"
+			(at 246.38 190.4999 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6620144c-f970-47ec-95fa-5b98b7c61aed")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP8")
 					(unit 1)
 				)
 			)
@@ -17284,7 +17607,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2ee7d21d-2fed-4875-8005-433d53ed00f6")
-		(property "Reference" "TP1"
+		(property "Reference" "TP9"
 			(at 246.38 180.3399 90)
 			(effects
 				(font
@@ -17339,7 +17662,7 @@
 		(instances
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP1")
+					(reference "TP9")
 					(unit 1)
 				)
 			)
@@ -19621,7 +19944,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "45fef3cf-0d2d-49ac-92dc-cb5fe6fee851")
-		(property "Reference" "TP9"
+		(property "Reference" "TP20"
 			(at 373.38 214.6299 90)
 			(effects
 				(font
@@ -19676,7 +19999,7 @@
 		(instances
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP9")
+					(reference "TP20")
 					(unit 1)
 				)
 			)
@@ -19902,7 +20225,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "49658f3d-a901-421e-9a4f-ce63c91bd906")
-		(property "Reference" "TP5"
+		(property "Reference" "TP13"
 			(at 246.38 172.7199 90)
 			(effects
 				(font
@@ -19957,7 +20280,7 @@
 		(instances
 			(project ""
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP5")
+					(reference "TP13")
 					(unit 1)
 				)
 			)
@@ -20250,7 +20573,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4d609fce-99ca-425b-9272-a298646b95a6")
-		(property "Reference" "TP4"
+		(property "Reference" "TP12"
 			(at 246.38 182.8799 90)
 			(effects
 				(font
@@ -20305,7 +20628,7 @@
 		(instances
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP4")
+					(reference "TP12")
 					(unit 1)
 				)
 			)
@@ -22292,6 +22615,77 @@
 		)
 	)
 	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 205.74 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "74d2d88d-6708-4f74-8d32-393c7333e31e")
+		(property "Reference" "TP14"
+			(at 246.38 205.7399 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d0e286cb-64bc-4d04-93b1-1a341119490c")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "UNITED_RESISTORS_DATA_BASE:R_ERJ-2RKF1001X")
 		(at 138.43 147.32 90)
 		(mirror x)
@@ -22503,7 +22897,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "76d893ab-d9b8-457d-9dd5-0a46d507e9b1")
-		(property "Reference" "TP7"
+		(property "Reference" "TP18"
 			(at 373.38 209.5499 90)
 			(effects
 				(font
@@ -22558,7 +22952,7 @@
 		(instances
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP7")
+					(reference "TP18")
 					(unit 1)
 				)
 			)
@@ -23834,7 +24228,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "884ee0ae-f49f-4ed5-9df1-f1eb428a7a4a")
-		(property "Reference" "TP8"
+		(property "Reference" "TP19"
 			(at 373.38 181.6099 90)
 			(effects
 				(font
@@ -23889,7 +24283,7 @@
 		(instances
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP8")
+					(reference "TP19")
 					(unit 1)
 				)
 			)
@@ -25139,6 +25533,77 @@
 		)
 	)
 	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 187.96 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "9e416190-d910-4fd2-9591-dcc7f13f6a9f")
+		(property "Reference" "TP15"
+			(at 246.38 187.9599 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3c78a2f1-4c87-4e0e-9078-4a01427ccdbf")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 328.93 109.22 0)
 		(mirror y)
@@ -25694,6 +26159,77 @@
 		)
 	)
 	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 200.66 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a7ae1f11-ae80-4b03-8ce8-8f04910f1bf1")
+		(property "Reference" "TP4"
+			(at 246.38 200.6599 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a0077e0e-646a-4546-abf1-328a55a98896")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 304.8 189.23 0)
 		(unit 1)
@@ -25769,7 +26305,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aba84647-54bd-4b9d-8be7-a9d036d89182")
-		(property "Reference" "TP10"
+		(property "Reference" "TP21"
 			(at 289.56 170.6879 0)
 			(effects
 				(font
@@ -25824,7 +26360,7 @@
 		(instances
 			(project ""
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP10")
+					(reference "TP21")
 					(unit 1)
 				)
 			)
@@ -26569,6 +27105,77 @@
 		)
 	)
 	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 241.3 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "cbddbde7-7a96-4732-a05d-a06679d928e6")
+		(property "Reference" "TP1"
+			(at 246.38 241.2999 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "94d06112-0464-4137-8be7-63a6c70474a6")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "UNITED_TEST_POINTS:TestPoint")
 		(at 368.3 176.53 270)
 		(unit 1)
@@ -26578,7 +27185,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cd455c63-64bf-4f37-b29a-aba31de77950")
-		(property "Reference" "TP6"
+		(property "Reference" "TP17"
 			(at 373.38 176.5299 90)
 			(effects
 				(font
@@ -26629,6 +27236,77 @@
 		)
 		(pin "1"
 			(uuid "df451909-8722-4742-ae3e-7c0dfbe1bc4a")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 195.58 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "cf0fe3a5-fa3b-4ddb-8e82-cdddcaaeccd8")
+		(property "Reference" "TP6"
+			(at 246.38 195.5799 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "30772ee7-d389-4117-b701-1b8690097b59")
 		)
 		(instances
 			(project "minimal_max32650"
@@ -27330,6 +28008,77 @@
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
 					(reference "U1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 243.84 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d981acbc-5496-4519-bca4-c79cc7b7be45")
+		(property "Reference" "TP3"
+			(at 246.38 243.8399 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 246.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 246.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 246.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 246.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4600f794-d154-4b3b-aca3-a2fb0420e91a")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP3")
 					(unit 1)
 				)
 			)
@@ -29313,7 +30062,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f4dafd49-9b9e-45aa-ad2a-aded969d0eda")
-		(property "Reference" "TP2"
+		(property "Reference" "TP10"
 			(at 246.38 177.7999 90)
 			(effects
 				(font
@@ -29368,7 +30117,78 @@
 		(instances
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP2")
+					(reference "TP10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 193.04 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f5f0f507-fc4d-488e-9e24-2407f0f40606")
+		(property "Reference" "TP7"
+			(at 246.38 193.0399 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 195.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a145d777-48a5-41e5-9192-1e0aec4302e5")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP7")
 					(unit 1)
 				)
 			)
@@ -29637,6 +30457,77 @@
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
 					(reference "#PWR014")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "UNITED_TEST_POINTS:TestPoint_Castelated")
+		(at 241.3 198.12 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f7197875-4aad-4bfc-9fc8-80c8b129b9fc")
+		(property "Reference" "TP5"
+			(at 246.38 198.1199 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 243.84 200.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "test_point_footprints:TestPoint_THTPad_Castelated"
+			(at 236.22 200.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 241.3 200.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 238.76 200.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1dc2d51c-d507-4b55-b7b1-5527bd2bdebf")
+		)
+		(instances
+			(project "minimal_max32650"
+				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
+					(reference "TP5")
 					(unit 1)
 				)
 			)
@@ -29936,7 +30827,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f8d538db-3c6f-40d6-9c2b-8f9bc3c70986")
-		(property "Reference" "TP11"
+		(property "Reference" "TP22"
 			(at 289.56 183.3879 0)
 			(effects
 				(font
@@ -29991,7 +30882,7 @@
 		(instances
 			(project "minimal_max32650"
 				(path "/95623a5c-6e9d-4c1c-be90-b39230c07c79"
-					(reference "TP11")
+					(reference "TP22")
 					(unit 1)
 				)
 			)
