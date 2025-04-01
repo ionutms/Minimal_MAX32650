@@ -66,35 +66,9 @@ jobs:
           chmod 777 schematics
           ls -la
       
-      - name: Generate PDF schematic (approach 1 - direct)
-        id: pdf-direct
-        if: steps.verify-files.outputs.schematic_found == 'true'
-        continue-on-error: true
-        run: |
-          echo "Approach 1: Generating PDF schematic directly..."
-          
-          # Run in docker with directory creation
-          docker run --rm \
-            -v ${{ github.workspace }}:/kicad_project \
-            kicad/kicad:9.0 \
-            bash -c "mkdir -p /kicad_project/schematics && \
-                    chmod 777 /kicad_project/schematics && \
-                    kicad-cli sch export pdf \
-                    --output '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf' \
-                    '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}'"
-          
-          # Check if PDF was generated
-          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ] && [ -s "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
-            echo "✅ PDF schematic generated successfully using direct approach"
-            echo "success=true" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Failed to generate PDF schematic using direct approach"
-            echo "success=false" >> $GITHUB_OUTPUT
-          fi
-      
       - name: Generate PDF schematic (approach 2 - container temp directory)
         id: pdf-temp-dir
-        if: steps.verify-files.outputs.schematic_found == 'true' && steps.pdf-direct.outputs.success != 'true'
+        if: steps.verify-files.outputs.schematic_found == 'true'
         continue-on-error: true
         run: |
           echo "Approach 2: Generating PDF in container's temporary directory first..."
@@ -119,57 +93,6 @@ jobs:
             echo "success=false" >> $GITHUB_OUTPUT
           fi
       
-      - name: Generate PDF schematic (approach 3 - with user mapping)
-        id: pdf-user-mapping
-        if: steps.verify-files.outputs.schematic_found == 'true' && steps.pdf-direct.outputs.success != 'true' && steps.pdf-temp-dir.outputs.success != 'true'
-        continue-on-error: true
-        run: |
-          echo "Approach 3: Generating PDF with user mapping..."
-          
-          # Run with current user mapping for permissions
-          docker run --rm \
-            -v ${{ github.workspace }}:/kicad_project \
-            --user $(id -u):$(id -g) \
-            kicad/kicad:9.0 \
-            kicad-cli sch export pdf \
-            --output "/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" \
-            "/kicad_project/${{ steps.verify-files.outputs.schematic_file }}"
-          
-          # Check if PDF was generated
-          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
-            echo "✅ PDF schematic generated successfully using user mapping approach"
-            echo "success=true" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Failed to generate PDF schematic using user mapping approach"
-            echo "success=false" >> $GITHUB_OUTPUT
-          fi
-      
-      - name: Generate PDF schematic (approach 4 - bash with mkdir)
-        id: pdf-bash-mkdir
-        if: steps.verify-files.outputs.schematic_found == 'true' && steps.pdf-direct.outputs.success != 'true' && steps.pdf-temp-dir.outputs.success != 'true' && steps.pdf-user-mapping.outputs.success != 'true'
-        continue-on-error: true
-        run: |
-          echo "Approach 4: Generating PDF with explicit directory creation inside container..."
-          
-          # Create directory inside container and then run command
-          docker run --rm \
-            -v ${{ github.workspace }}:/kicad_project \
-            kicad/kicad:9.0 \
-            bash -c "mkdir -p /kicad_project/schematics && \
-                     chmod 777 /kicad_project/schematics && \
-                     kicad-cli sch export pdf \
-                     --output '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf' \
-                     '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}'"
-          
-          # Check if PDF was generated
-          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
-            echo "✅ PDF schematic generated successfully using bash with mkdir approach"
-            echo "success=true" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Failed to generate PDF schematic using bash with mkdir approach"
-            echo "success=false" >> $GITHUB_OUTPUT
-          fi
-      
       - name: Check for generated files
         run: |
           echo "Checking for generated schematic files..."
@@ -187,20 +110,20 @@ jobs:
       
       - name: Upload schematic outputs as artifacts
         uses: actions/upload-artifact@v4
-        if: ${{ steps.pdf-direct.outputs.success == 'true' || steps.pdf-temp-dir.outputs.success == 'true' || steps.pdf-user-mapping.outputs.success == 'true' || steps.pdf-bash-mkdir.outputs.success == 'true' }}
+        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
         with:
           name: schematic-outputs
           path: schematics/
           retention-days: 7
       
       - name: Configure Git
-        if: ${{ steps.pdf-direct.outputs.success == 'true' || steps.pdf-temp-dir.outputs.success == 'true' || steps.pdf-user-mapping.outputs.success == 'true' || steps.pdf-bash-mkdir.outputs.success == 'true' }}
+        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
       - name: Commit schematic outputs to repository
-        if: ${{ steps.pdf-direct.outputs.success == 'true' || steps.pdf-temp-dir.outputs.success == 'true' || steps.pdf-user-mapping.outputs.success == 'true' || steps.pdf-bash-mkdir.outputs.success == 'true' }}
+        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
         run: |
           git add schematics/
           
