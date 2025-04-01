@@ -56,12 +56,20 @@ jobs:
           mkdir -p schematics
           chmod -R 777 ${{ github.workspace }}
       
-      - name: Generate PDF schematic with all themes
+      - name: Debug KiCad CLI version and capabilities
+        run: |
+          echo "Checking KiCad CLI version and capabilities..."
+          docker run --rm kicad/kicad:9.0 bash -c "kicad-cli --version && echo '---' && kicad-cli --help"
+          
+          echo "Checking schema export options..."
+          docker run --rm kicad/kicad:9.0 bash -c "kicad-cli sch export --help && echo '---' && kicad-cli sch export pdf --help"
+      
+      - name: Generate PDF schematic with explicit debugging
         id: pdf-temp-dir
         if: steps.verify-files.outputs.schematic_found == 'true'
         continue-on-error: true
         run: |
-          echo "Generating PDFs with different themes..."
+          echo "Attempting to generate PDF with verbose output..."
           
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
@@ -70,37 +78,39 @@ jobs:
             bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && \
                      export HOME=/tmp/home && \
                      mkdir -p /tmp && \
-                     echo 'Available themes:' && \
-                     kicad-cli sch export pdf --help | grep -A 20 theme && \
-                     echo 'Testing theme options...' && \
-                     THEME_OPTIONS=('default' 'dark' 'light' 'user' 'bw') && \
-                     mkdir -p /kicad_project/schematics && \
-                     # Try to generate with 'default' (no theme specified)
-                     echo \"Trying without theme option\" && \
+                     cd /kicad_project && \
+                     echo 'Current directory:' && pwd && \
+                     echo 'Schematic file:' && ls -la ${{ steps.verify-files.outputs.schematic_file }} && \
+                     echo '---' && \
+                     echo 'Trying standard export without theme...' && \
                      kicad-cli sch export pdf \
-                       --output '/tmp/schematic_default.pdf' \
-                       '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
-                     cp /tmp/schematic_default.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_default.pdf' && \
-                     # Try each themed version
-                     for THEME in dark light user bw; do \
-                       echo \"Trying theme: \$THEME\" && \
-                       kicad-cli sch export pdf \
-                         --output \"/tmp/schematic_\$THEME.pdf\" \
-                         --theme \$THEME \
-                         '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
-                       cp \"/tmp/schematic_\$THEME.pdf\" \"/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_\$THEME.pdf\" || echo \"Failed with theme: \$THEME\"; \
-                     done && \
-                     # Also save the default version as the main schematic file
-                     cp '/tmp/schematic_default.pdf' '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
+                       --output '/tmp/standard.pdf' \
+                       '${{ steps.verify-files.outputs.schematic_file }}' && \
+                     echo '---' && \
+                     echo 'Trying alternative approaches:' && \
+                     kicad-cli sch export pdf \
+                       -o '/tmp/colors.pdf' \
+                       --colors dark \
+                       '${{ steps.verify-files.outputs.schematic_file }}' && \
+                     echo '---' && \
+                     kicad-cli sch export pdf \
+                       -o '/tmp/blackandwhite.pdf' \
+                       --black-and-white \
+                       '${{ steps.verify-files.outputs.schematic_file }}' && \
+                     echo '---' && \
+                     mkdir -p /kicad_project/schematics && \
+                     cp /tmp/*.pdf /kicad_project/schematics/ && \
+                     # Also save the standard version as the main schematic file
+                     cp '/tmp/standard.pdf' '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
           
           echo "Generated files:"
           ls -la schematics/
           
           if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf" ]; then
-            echo "✅ Default PDF schematic generated successfully"
+            echo "✅ PDF schematic generated successfully"
             echo "success=true" >> $GITHUB_OUTPUT
           else
-            echo "❌ Failed to generate default PDF schematic"
+            echo "❌ Failed to generate PDF schematic"
             echo "success=false" >> $GITHUB_OUTPUT
           fi
       
@@ -134,6 +144,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Generate schematic PDFs with multiple themes"
+            git commit -m "Generate schematic PDFs with debugging"
             git push
           fi
