@@ -66,50 +66,59 @@ jobs:
         run: |
           echo "Generating PDF in container's temporary directory first..."
           
-          # Ensure theme_files exists and download Gruvbox theme if missing
-          if [ ! -d "theme_files" ]; then
-              echo "⚠️ theme_files directory not found! Downloading Gruvbox theme..."
-              
-              for i in {1..3}; do
-                git clone --depth=1 https://github.com/pointhi/kicad-color-schemes.git temp_kicad_themes && break
-                echo "Retrying clone attempt ($i/3)..."
-                sleep 5
-              done
-              
-              if [ ! -d "temp_kicad_themes/color_themes" ]; then
-                echo "❌ Clone failed or directory missing. Exiting."
-                exit 1
-              fi
-              
-              mkdir -p theme_files
-              cp -r temp_kicad_themes/color_themes/* theme_files/
-              chmod -R 777 theme_files
-              rm -rf temp_kicad_themes
-          else
-              echo "✅ theme_files directory found. Using existing theme."
-          fi
-
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
             -e HOME=/tmp/home \
-            -e KICAD_CONFIG_HOME=/tmp/home/.config/kicad/9.0 \
             kicad/kicad:9.0 \
-            bash -c "
-              mkdir -p /tmp/home/.config/kicad/9.0/colors
-              cp -r /kicad_project/theme_files/* /tmp/home/.config/kicad/9.0/colors/
-
-              # Generate PDF with Gruvbox theme
-              kicad-cli sch export pdf \
-              --output '/tmp/schematic.pdf' -t gruvbox \
-              '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
-
-              mkdir -p /kicad_project/schematics && \
-              cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
-
+            bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && export HOME=/tmp/home && \
+                     mkdir -p /tmp && \
+                     kicad-cli sch export pdf \
+                     --output '/tmp/schematic.pdf' -t gruvbox \
+                     '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
+                     mkdir -p /kicad_project/schematics && \
+                     cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
+          
           if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf" ]; then
             echo "✅ PDF schematic generated successfully"
             echo "success=true" >> $GITHUB_OUTPUT
           else
             echo "❌ Failed to generate PDF schematic"
             echo "success=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check for generated files
+        run: |
+          echo "Checking for generated schematic files..."
+          ls -la schematics/ || echo "No schematics directory found"
+          FILE_COUNT=$(find schematics -type f 2>/dev/null | wc -l)
+          if [ "$FILE_COUNT" -gt 0 ]; then
+            echo "✅ Generated $FILE_COUNT schematic file(s)"
+          else
+            echo "❌ No schematic files were generated"
+            exit 1
+          fi
+      
+      - name: Upload schematic outputs as artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
+        with:
+          name: schematic-outputs
+          path: schematics/
+          retention-days: 7
+      
+      - name: Configure Git
+        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+      
+      - name: Commit schematic outputs to repository
+        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
+        run: |
+          git add schematics/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update schematic"
+            git push
           fi
