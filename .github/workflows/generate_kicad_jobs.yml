@@ -2,9 +2,6 @@ name: Generate KiCad Schematic PDFs
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'minimal_max32650/*.kicad_sch'
-      - 'minimal_max32650/*.kicad_pro'
   workflow_dispatch:
 
 jobs:
@@ -70,10 +67,15 @@ jobs:
             -v ${{ github.workspace }}:/kicad_project \
             -e HOME=/tmp/home \
             kicad/kicad:9.0 \
-            bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && export HOME=/tmp/home && \
+            bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && \
+                     export HOME=/tmp/home && \
                      mkdir -p /tmp && \
+                     echo 'Available themes:' && \
+                     kicad-cli sch export pdf --help | grep -A 10 theme && \
+                     echo 'Applying theme: dark' && \
                      kicad-cli sch export pdf \
-                     --output '/tmp/schematic.pdf' -t gruvbox \
+                     --output '/tmp/schematic.pdf' \
+                     --theme dark \
                      '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
                      mkdir -p /kicad_project/schematics && \
                      cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
@@ -119,6 +121,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Update schematic"
+            git commit -m "Generate the latest schematic PDF"
             git push
           fi
