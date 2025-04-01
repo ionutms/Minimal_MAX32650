@@ -69,14 +69,16 @@ jobs:
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
             -e HOME=/tmp/home \
+            -e KICAD_CONFIG_HOME=/tmp/home/.config/kicad/9.0 \
             kicad/kicad:9.0 \
-            bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && export HOME=/tmp/home && \
-                     mkdir -p /tmp && \
-                     kicad-cli sch export pdf \
-                     --output '/tmp/schematic.pdf' -t gruvbox \
-                     '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
-                     mkdir -p /kicad_project/schematics && \
-                     cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf'"
+            bash -c "
+              mkdir -p /tmp/home/.config/kicad/9.0/colors && \
+              cp -r /kicad_project/theme_files/* /tmp/home/.config/kicad/9.0/colors/ && \
+              kicad-cli sch export pdf \
+              --output '/tmp/schematic.pdf' -t gruvbox \
+              '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
+              mkdir -p /kicad_project/schematics && \
+              cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf'"
           
           if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
             echo "✅ PDF schematic generated successfully"
@@ -85,6 +87,7 @@ jobs:
             echo "❌ Failed to generate PDF schematic"
             echo "success=false" >> $GITHUB_OUTPUT
           fi
+
       
       - name: Check for generated files
         run: |
