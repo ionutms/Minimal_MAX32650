@@ -5,7 +5,7 @@ on:
     paths:
       - 'minimal_max32650/*.kicad_sch'
       - 'minimal_max32650/*.kicad_pro'
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:
 
 jobs:
   generate-schematic-pdfs:
@@ -18,21 +18,18 @@ jobs:
       - name: Verify project files
         id: verify-files
         run: |
-          # List directory contents to see what we're working with
           echo "Repository contents:"
           ls -la
-          
           echo "Project directory contents:"
           ls -la minimal_max32650/ || echo "Directory not found"
           
-          # Find KiCad project and schematic files
           PROJECT_FILE=$(find . -name "*.kicad_pro" | grep -i "minimal_max32650" | head -n 1)
           SCHEMATIC_FILE=$(find . -name "*.kicad_sch" | grep -i "minimal_max32650" | head -n 1)
           
           if [ -z "$PROJECT_FILE" ]; then
             echo "❌ KiCad project file (.kicad_pro) not found!"
             echo "project_found=false" >> $GITHUB_OUTPUT
-            exit 0  # Don't fail the workflow yet
+            exit 0
           else
             echo "✅ Found KiCad project file: $PROJECT_FILE"
             echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
@@ -46,8 +43,6 @@ jobs:
             echo "✅ Found KiCad schematic file: $SCHEMATIC_FILE"
             echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
             echo "schematic_found=true" >> $GITHUB_OUTPUT
-            
-            # Extract project name from file path
             PROJECT_NAME=$(basename "$SCHEMATIC_FILE" .kicad_sch)
             echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
           fi
@@ -61,10 +56,8 @@ jobs:
       - name: Create output directory with proper permissions
         if: steps.verify-files.outputs.schematic_found == 'true'
         run: |
-          # Create output directory with explicit permissions
           mkdir -p schematics
-          chmod 777 schematics
-          ls -la
+          chmod -R 777 ${{ github.workspace }}
       
       - name: Generate PDF schematic (approach 2 - container temp directory)
         id: pdf-temp-dir
@@ -73,8 +66,7 @@ jobs:
         run: |
           echo "Approach 2: Generating PDF in container's temporary directory first..."
           
-          # Use container's tmp directory first, then copy
-          docker run --rm \
+          docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
             kicad/kicad:9.0 \
             bash -c "mkdir -p /tmp && \
@@ -84,12 +76,11 @@ jobs:
                      mkdir -p /kicad_project/schematics && \
                      cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf'"
           
-          # Check if PDF was generated
           if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
-            echo "✅ PDF schematic generated successfully using temp directory approach"
+            echo "✅ PDF schematic generated successfully"
             echo "success=true" >> $GITHUB_OUTPUT
           else
-            echo "❌ Failed to generate PDF schematic using temp directory approach"
+            echo "❌ Failed to generate PDF schematic"
             echo "success=false" >> $GITHUB_OUTPUT
           fi
       
@@ -97,14 +88,11 @@ jobs:
         run: |
           echo "Checking for generated schematic files..."
           ls -la schematics/ || echo "No schematics directory found"
-          
-          # Count number of files generated
           FILE_COUNT=$(find schematics -type f 2>/dev/null | wc -l)
-          
           if [ "$FILE_COUNT" -gt 0 ]; then
             echo "✅ Generated $FILE_COUNT schematic file(s)"
           else
-            echo "❌ No schematic files were generated after trying all approaches"
+            echo "❌ No schematic files were generated"
             exit 1
           fi
       
@@ -121,13 +109,11 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+      
       - name: Commit schematic outputs to repository
         if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
         run: |
           git add schematics/
-          
-          # Only commit if there are changes
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
