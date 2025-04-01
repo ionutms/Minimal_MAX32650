@@ -59,7 +59,7 @@ jobs:
           mkdir -p schematics
           chmod -R 777 ${{ github.workspace }}
       
-      - name: Generate PDF schematic
+      - name: Generate PDF schematic with theme
         id: pdf-temp-dir
         if: steps.verify-files.outputs.schematic_found == 'true'
         continue-on-error: true
@@ -70,7 +70,7 @@ jobs:
             -v ${{ github.workspace }}:/kicad_project \
             -e HOME=/tmp/home \
             kicad/kicad:9.0 \
-            bash -c "mkdir -p /tmp/home && export HOME=/tmp/home && \
+            bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && export HOME=/tmp/home && \
                      mkdir -p /tmp && \
                      kicad-cli sch export pdf \
                      --output '/tmp/schematic.pdf' -t gruvbox \
