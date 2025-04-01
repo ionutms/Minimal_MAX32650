@@ -1,0 +1,144 @@
+name: Generate KiCad Schematic Jobs
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'minimal_max32650/*.kicad_sch'
+      - 'minimal_max32650/*.kicad_pro'
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  generate-schematic-jobs-only:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: Set up KiCad project paths
+        id: setup-paths
+        run: |
+          # Set correct project directory path (lowercase)
+          PROJECT_DIR="minimal_max32650"
+          
+          # Find the KiCad project file in the directory
+          PROJECT_FILE=$(find "$PROJECT_DIR" -name "*.kicad_pro" | head -n 1)
+          
+          # Verify the project file exists
+          if [ -z "$PROJECT_FILE" ]; then
+            echo "Project file not found in directory: $PROJECT_DIR"
+            ls -la "$PROJECT_DIR"
+            exit 1
+          fi
+          
+          # Get project name without extension
+          PROJECT_NAME=$(basename "$PROJECT_FILE" .kicad_pro)
+          SCHEMATIC_FILE=$(find "$PROJECT_DIR" -name "*.kicad_sch" | head -n 1)
+          
+          echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
+          echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
+          echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+          echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
+          
+          echo "Using project file: $PROJECT_FILE"
+          echo "Using schematic file: $SCHEMATIC_FILE"
+          
+          # Create output directory for schematics
+          mkdir -p "schematics"
+      
+      - name: List available schematic jobs
+        id: list-jobs
+        run: |
+          # List available schematic jobs
+          JOBS_OUTPUT=$(docker run --rm \
+            -v ${{ github.workspace }}:/kicad_project \
+            kicad/kicad:9.0 \
+            kicad-cli sch export jobs --list \
+            "/kicad_project/${{ steps.setup-paths.outputs.project_file }}")
+          
+          echo "Jobs output:"
+          echo "$JOBS_OUTPUT"
+          
+          # Check if we have any schematic jobs
+          if [[ "$JOBS_OUTPUT" == *"No jobs"* ]]; then
+            echo "No schematic jobs found, will create a fallback job"
+            echo "has_jobs=false" >> $GITHUB_OUTPUT
+          else
+            echo "Schematic jobs found"
+            echo "has_jobs=true" >> $GITHUB_OUTPUT
+            
+            # Extract just the job names
+            JOB_NAMES=$(echo "$JOBS_OUTPUT" | grep -o 'Job [^:]*:' | sed 's/Job //;s/://')
+            echo "job_names<<EOF" >> $GITHUB_OUTPUT
+            echo "$JOB_NAMES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Execute schematic jobs
+        if: steps.list-jobs.outputs.has_jobs == 'true'
+        run: |
+          # Read job names and run each job
+          IFS=$'\n'
+          for JOB in ${{ steps.list-jobs.outputs.job_names }}; do
+            echo "Running schematic job: $JOB"
+            
+            docker run --rm \
+              -v ${{ github.workspace }}:/kicad_project \
+              kicad/kicad:9.0 \
+              kicad-cli sch export jobs \
+              --output "/kicad_project/schematics" \
+              --jobs "$JOB" \
+              "/kicad_project/${{ steps.setup-paths.outputs.project_file }}"
+              
+            # Check the result of the job
+            if [ $? -eq 0 ]; then
+              echo "✅ Job '$JOB' completed successfully"
+            else
+              echo "❌ Job '$JOB' failed"
+            fi
+          done
+      
+      - name: Create and run PDF export job if no jobs found
+        if: steps.list-jobs.outputs.has_jobs == 'false'
+        run: |
+          echo "No predefined schematic jobs found, creating a temporary job definition"
+          
+          # Generate a PDF export using kicad-cli directly
+          docker run --rm \
+            -v ${{ github.workspace }}:/kicad_project \
+            kicad/kicad:9.0 \
+            kicad-cli sch export pdf \
+            --output "/kicad_project/schematics/${{ steps.setup-paths.outputs.project_name }}-schematic.pdf" \
+            "/kicad_project/${{ steps.setup-paths.outputs.schematic_file }}"
+          
+          # Check if PDF was generated successfully
+          if [ -f "schematics/${{ steps.setup-paths.outputs.project_name }}-schematic.pdf" ]; then
+            echo "✅ PDF schematic generated successfully"
+          else
+            echo "❌ Failed to generate PDF schematic"
+            exit 1
+          fi
+      
+      - name: Upload schematic outputs as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: schematic-outputs
+          path: schematics/
+          retention-days: 7
+      
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+      - name: Commit schematic outputs to repository
+        run: |
+          git add schematics/
+          
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update schematic outputs [skip ci]"
+            git push
+          fi
