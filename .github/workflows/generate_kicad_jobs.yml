@@ -67,20 +67,28 @@ jobs:
           echo "Generating PDF in container's temporary directory first..."
           
           docker run --rm -u $(id -u):$(id -g) \
-            -v ${{ github.workspace }}:/kicad_project \
+            -v /home/runner/work/Minimal_MAX32650/Minimal_MAX32650:/kicad_project \
             -e HOME=/tmp/home \
             -e KICAD_CONFIG_HOME=/tmp/home/.config/kicad/9.0 \
             kicad/kicad:9.0 \
             bash -c "
-              mkdir -p /tmp/home/.config/kicad/9.0/colors && \
-              cp -r /kicad_project/theme_files/* /tmp/home/.config/kicad/9.0/colors/ && \
+              mkdir -p /tmp/home/.config/kicad/9.0/colors
+
+              if [ -d "/kicad_project/theme_files" ]; then
+                  cp -r /kicad_project/theme_files/* /tmp/home/.config/kicad/9.0/colors/
+                  THEME_FLAG='-t gruvbox'
+              else
+                  echo '⚠️ Warning: theme_files directory not found. Using default KiCad theme.'
+                  THEME_FLAG=''
+              fi
+
               kicad-cli sch export pdf \
-              --output '/tmp/schematic.pdf' -t gruvbox \
-              '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
+              --output '/tmp/schematic.pdf' $THEME_FLAG \
+              '/kicad_project/minimal_max32650/minimal_max32650.kicad_sch' && \
               mkdir -p /kicad_project/schematics && \
-              cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf'"
-          
-          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
+              cp /tmp/schematic.pdf '/kicad_project/schematics/minimal_max32650-schematic.pdf'"
+
+          if [ -f "schematics/minimal_max32650-schematic.pdf" ]; then
             echo "✅ PDF schematic generated successfully"
             echo "success=true" >> $GITHUB_OUTPUT
           else
