@@ -56,7 +56,7 @@ jobs:
           mkdir -p schematics
           chmod -R 777 ${{ github.workspace }}
       
-      - name: Generate PDF schematic with theme
+      - name: Generate PDF schematic
         id: pdf-temp-dir
         if: steps.verify-files.outputs.schematic_found == 'true'
         continue-on-error: true
@@ -70,12 +70,8 @@ jobs:
             bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && \
                      export HOME=/tmp/home && \
                      mkdir -p /tmp && \
-                     echo 'Available themes:' && \
-                     kicad-cli sch export pdf --help | grep -A 10 theme && \
-                     echo 'Applying theme: dark' && \
                      kicad-cli sch export pdf \
                      --output '/tmp/schematic.pdf' \
-                     --theme dark \
                      '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
                      mkdir -p /kicad_project/schematics && \
                      cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
