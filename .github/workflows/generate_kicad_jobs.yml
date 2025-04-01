@@ -13,109 +13,113 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
-      - name: Set up KiCad project paths
-        id: setup-paths
+      - name: Verify project files
+        id: verify-files
         run: |
-          # Set correct project directory path (lowercase)
-          PROJECT_DIR="minimal_max32650"
+          # List directory contents to see what we're working with
+          echo "Repository contents:"
+          ls -la
           
-          # Find the KiCad project file in the directory
-          PROJECT_FILE=$(find "$PROJECT_DIR" -name "*.kicad_pro" | head -n 1)
+          echo "Project directory contents:"
+          ls -la minimal_max32650/ || echo "Directory not found"
           
-          # Verify the project file exists
+          # Find KiCad project and schematic files
+          PROJECT_FILE=$(find . -name "*.kicad_pro" | grep -i "minimal_max32650" | head -n 1)
+          SCHEMATIC_FILE=$(find . -name "*.kicad_sch" | grep -i "minimal_max32650" | head -n 1)
+          
           if [ -z "$PROJECT_FILE" ]; then
-            echo "Project file not found in directory: $PROJECT_DIR"
-            ls -la "$PROJECT_DIR"
-            exit 1
+            echo "❌ KiCad project file (.kicad_pro) not found!"
+            echo "project_found=false" >> $GITHUB_OUTPUT
+            exit 0  # Don't fail the workflow yet
+          else
+            echo "✅ Found KiCad project file: $PROJECT_FILE"
+            echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
+            echo "project_found=true" >> $GITHUB_OUTPUT
           fi
           
-          # Get project name without extension
-          PROJECT_NAME=$(basename "$PROJECT_FILE" .kicad_pro)
-          SCHEMATIC_FILE=$(find "$PROJECT_DIR" -name "*.kicad_sch" | head -n 1)
-          
-          echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
-          echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
-          echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
-          echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
-          
-          echo "Using project file: $PROJECT_FILE"
-          echo "Using schematic file: $SCHEMATIC_FILE"
+          if [ -z "$SCHEMATIC_FILE" ]; then
+            echo "❌ KiCad schematic file (.kicad_sch) not found!"
+            echo "schematic_found=false" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Found KiCad schematic file: $SCHEMATIC_FILE"
+            echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
+            echo "schematic_found=true" >> $GITHUB_OUTPUT
+            
+            # Extract project name from file path
+            PROJECT_NAME=$(basename "$SCHEMATIC_FILE" .kicad_sch)
+            echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+          fi
           
           # Create output directory for schematics
           mkdir -p "schematics"
       
-      - name: List available schematic jobs
-        id: list-jobs
+      - name: Skip if project files not found
+        if: steps.verify-files.outputs.project_found != 'true' || steps.verify-files.outputs.schematic_found != 'true'
         run: |
-          # List available schematic jobs
-          JOBS_OUTPUT=$(docker run --rm \
+          echo "Required KiCad project files not found. Skipping schematic generation."
+          exit 0
+      
+      - name: Try to list schematic jobs
+        id: list-jobs
+        if: steps.verify-files.outputs.project_found == 'true'
+        run: |
+          echo "Attempting to list schematic jobs..."
+          
+          # Check Docker availability
+          docker --version || (echo "Docker not available" && exit 1)
+          
+          # Try to list jobs with verbose output
+          docker run --rm \
             -v ${{ github.workspace }}:/kicad_project \
             kicad/kicad:9.0 \
-            kicad-cli sch export jobs --list \
-            "/kicad_project/${{ steps.setup-paths.outputs.project_file }}")
+            bash -c "ls -la /kicad_project && echo 'Trying to list jobs:' && kicad-cli sch export jobs --list /kicad_project/${{ steps.verify-files.outputs.project_file }} || echo 'Command failed with exit code $?'"
           
-          echo "Jobs output:"
-          echo "$JOBS_OUTPUT"
-          
-          # Check if we have any schematic jobs
-          if [[ "$JOBS_OUTPUT" == *"No jobs"* ]]; then
-            echo "No schematic jobs found, will create a fallback job"
-            echo "has_jobs=false" >> $GITHUB_OUTPUT
-          else
-            echo "Schematic jobs found"
-            echo "has_jobs=true" >> $GITHUB_OUTPUT
-            
-            # Extract just the job names
-            JOB_NAMES=$(echo "$JOBS_OUTPUT" | grep -o 'Job [^:]*:' | sed 's/Job //;s/://')
-            echo "job_names<<EOF" >> $GITHUB_OUTPUT
-            echo "$JOB_NAMES" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          fi
+          # Since the above might fail, let's assume no jobs for now and let the direct PDF export handle things
+          echo "has_jobs=false" >> $GITHUB_OUTPUT
       
-      - name: Execute schematic jobs
-        if: steps.list-jobs.outputs.has_jobs == 'true'
+      - name: Generate PDF schematic (direct approach)
+        if: steps.verify-files.outputs.schematic_found == 'true'
         run: |
-          # Read job names and run each job
-          IFS=$'\n'
-          for JOB in ${{ steps.list-jobs.outputs.job_names }}; do
-            echo "Running schematic job: $JOB"
-            
-            docker run --rm \
-              -v ${{ github.workspace }}:/kicad_project \
-              kicad/kicad:9.0 \
-              kicad-cli sch export jobs \
-              --output "/kicad_project/schematics" \
-              --jobs "$JOB" \
-              "/kicad_project/${{ steps.setup-paths.outputs.project_file }}"
-              
-            # Check the result of the job
-            if [ $? -eq 0 ]; then
-              echo "✅ Job '$JOB' completed successfully"
-            else
-              echo "❌ Job '$JOB' failed"
-            fi
-          done
-      
-      - name: Create and run PDF export job if no jobs found
-        if: steps.list-jobs.outputs.has_jobs == 'false'
-        run: |
-          echo "No predefined schematic jobs found, creating a temporary job definition"
+          echo "Generating PDF schematic directly..."
           
-          # Generate a PDF export using kicad-cli directly
+          # Use direct PDF export approach (most reliable)
           docker run --rm \
             -v ${{ github.workspace }}:/kicad_project \
             kicad/kicad:9.0 \
             kicad-cli sch export pdf \
-            --output "/kicad_project/schematics/${{ steps.setup-paths.outputs.project_name }}-schematic.pdf" \
-            "/kicad_project/${{ steps.setup-paths.outputs.schematic_file }}"
+            --output "/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" \
+            "/kicad_project/${{ steps.verify-files.outputs.schematic_file }}"
           
-          # Check if PDF was generated successfully
-          if [ -f "schematics/${{ steps.setup-paths.outputs.project_name }}-schematic.pdf" ]; then
+          # Check if PDF was generated
+          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
             echo "✅ PDF schematic generated successfully"
           else
             echo "❌ Failed to generate PDF schematic"
+            
+            # Try alternative approach with setsoft/kicad_auto
+            echo "Trying alternative approach with KiBot..."
+            docker run --rm \
+              -v ${{ github.workspace }}:/kicad_project \
+              setsoft/kicad_auto:latest \
+              kibot -e "/kicad_project/${{ steps.verify-files.outputs.schematic_file }}" \
+              -d /kicad_project/schematics \
+              -s all pdf_sch_print
+          fi
+      
+      - name: Check for generated files
+        run: |
+          echo "Checking for generated schematic files..."
+          ls -la schematics/ || echo "No schematics directory found"
+          
+          # Count number of files generated
+          FILE_COUNT=$(find schematics -type f | wc -l)
+          
+          if [ "$FILE_COUNT" -gt 0 ]; then
+            echo "✅ Generated $FILE_COUNT schematic file(s)"
+          else
+            echo "❌ No schematic files were generated"
             exit 1
           fi
       
