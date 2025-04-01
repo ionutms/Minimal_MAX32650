@@ -46,7 +46,7 @@ jobs:
             PROJECT_NAME=$(basename "$SCHEMATIC_FILE" .kicad_sch)
             echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
           fi
-      
+  
       - name: Skip if project files not found
         if: steps.verify-files.outputs.project_found != 'true' || steps.verify-files.outputs.schematic_found != 'true'
         run: |
@@ -68,15 +68,17 @@ jobs:
           
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
+            -e HOME=/tmp/home \
             kicad/kicad:9.0 \
-            bash -c "mkdir -p /tmp && \
+            bash -c "mkdir -p /tmp/home && export HOME=/tmp/home && \
+                     mkdir -p /tmp && \
                      kicad-cli sch export pdf \
                      --output '/tmp/schematic.pdf' -t gruvbox \
                      '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
                      mkdir -p /kicad_project/schematics && \
                      cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf'"
           
-          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf" ]; then
+          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
             echo "✅ PDF schematic generated successfully"
             echo "success=true" >> $GITHUB_OUTPUT
           else
