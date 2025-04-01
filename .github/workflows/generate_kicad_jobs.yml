@@ -59,24 +59,24 @@ jobs:
           mkdir -p schematics
           chmod -R 777 ${{ github.workspace }}
       
-      - name: Generate PDF schematic (approach 2 - container temp directory)
+      - name: Generate PDF schematic
         id: pdf-temp-dir
         if: steps.verify-files.outputs.schematic_found == 'true'
         continue-on-error: true
         run: |
-          echo "Approach 2: Generating PDF in container's temporary directory first..."
+          echo "Generating PDF in container's temporary directory first..."
           
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
             kicad/kicad:9.0 \
             bash -c "mkdir -p /tmp && \
                      kicad-cli sch export pdf \
-                     --output '/tmp/schematic.pdf' \
+                     --output '/tmp/schematic.pdf' -t gruvbox \
                      '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
                      mkdir -p /kicad_project/schematics && \
                      cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf'"
           
-          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" ]; then
+          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf" ]; then
             echo "✅ PDF schematic generated successfully"
             echo "success=true" >> $GITHUB_OUTPUT
           else
@@ -117,6 +117,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Update schematic outputs [skip ci]"
+            git commit -m "Update schematic"
             git push
           fi
