@@ -56,31 +56,126 @@ jobs:
           mkdir -p schematics
           chmod -R 777 ${{ github.workspace }}
       
-      - name: Generate PDF schematic
-        id: pdf-temp-dir
+      - name: Check available KiCad themes
+        if: steps.verify-files.outputs.schematic_found == 'true'
+        run: |
+          echo "Checking available color themes in KiCad container..."
+          docker run --rm kicad/kicad:9.0 bash -c "find /usr -name \"*.json\" | grep -i color || echo 'No color files found'"
+          docker run --rm kicad/kicad:9.0 kicad-cli sch export --help | grep -A 10 "theme" || echo "No theme help info found"
+      
+      - name: Create Gruvbox theme
+        if: steps.verify-files.outputs.schematic_found == 'true'
+        run: |
+          echo "Creating Gruvbox theme file..."
+          mkdir -p kicad_themes
+          
+          # Create a Gruvbox theme file
+          cat > kicad_themes/gruvbox.json << 'EOF'
+          {
+            "schematic": {
+              "background": "#282828",
+              "brightBackground": "#3c3836",
+              "sheet": "#ebdbb2",
+              "sheet_name": "#b8bb26",
+              "sheet_name_alt": "#fabd2f",
+              "sheet_filename": "#83a598",
+              "label": "#ebdbb2",
+              "label_global": "#83a598",
+              "label_hierarchical": "#fabd2f",
+              "wire": "#458588",
+              "bus": "#d65d0e",
+              "junction": "#fe8019",
+              "noconnect": "#fb4934",
+              "item_selected": "#fb4934",
+              "pin": "#b8bb26",
+              "pin_name": "#b8bb26",
+              "pin_number": "#83a598",
+              "referencepart": "#ebdbb2",
+              "valuepart": "#ebdbb2",
+              "fields": "#83a598",
+              "notes": "#8ec07c",
+              "netname": "#ebdbb2",
+              "grid": "#665c54",
+              "grid_axes": "#928374",
+              "hidden": "#504945",
+              "cursor": "#d65d0e",
+              "page_limits": "#282828",
+              "erc_warning": "#fabd2f",
+              "erc_error": "#fb4934",
+              "scoreboard_sheet_active": "#8ec07c",
+              "scoreboard_sheet_active_selected": "#fb4934",
+              "scoreboard_sheet_passive": "#504945",
+              "scoreboard_sheet_passive_selected": "#d65d0e",
+              "scoreboard_label_hi": "#fabd2f",
+              "shadow": "#3c3836"
+            }
+          }
+          EOF
+          
+          echo "Gruvbox theme created."
+          ls -la kicad_themes/
+      
+      - name: Generate PDF schematic with Gruvbox theme
+        id: pdf-gruvbox
         if: steps.verify-files.outputs.schematic_found == 'true'
         continue-on-error: true
         run: |
-          echo "Generating PDF in container's temporary directory first..."
+          echo "Generating PDF with Gruvbox theme..."
+          
+          docker run --rm -u $(id -u):$(id -g) \
+            -v ${{ github.workspace }}:/kicad_project \
+            -v ${{ github.workspace }}/kicad_themes:/tmp/home/.config/kicad/9.0/colors \
+            -e HOME=/tmp/home \
+            kicad/kicad:9.0 \
+            bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && \
+                     cp /kicad_project/kicad_themes/gruvbox.json /tmp/home/.config/kicad/9.0/colors/ && \
+                     export HOME=/tmp/home && \
+                     mkdir -p /tmp && \
+                     echo 'Available themes:' && \
+                     ls -la /tmp/home/.config/kicad/9.0/colors/ && \
+                     echo 'Generating schematic PDF with Gruvbox theme...' && \
+                     kicad-cli sch export pdf \
+                     --output '/tmp/schematic.pdf' \
+                     --theme gruvbox \
+                     '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
+                     mkdir -p /kicad_project/schematics && \
+                     echo 'Copying output file...' && \
+                     cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_gruvbox_schematic.pdf' && \
+                     echo 'Done copying file.'"
+          
+          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}_gruvbox_schematic.pdf" ] && [ -s "schematics/${{ steps.verify-files.outputs.project_name }}_gruvbox_schematic.pdf" ]; then
+            echo "✅ PDF schematic with Gruvbox theme generated successfully"
+            echo "success=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Failed to generate PDF schematic with Gruvbox theme"
+            echo "success=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Try default theme approach
+        id: pdf-default
+        if: steps.pdf-gruvbox.outputs.success != 'true'
+        run: |
+          echo "Trying default theme approach..."
           
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
             -e HOME=/tmp/home \
-            kicad/kicad:nightly \
-            bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && \
+            kicad/kicad:9.0 \
+            bash -c "mkdir -p /tmp/home && \
                      export HOME=/tmp/home && \
                      mkdir -p /tmp && \
                      kicad-cli sch export pdf \
-                     --output '/tmp/schematic.pdf' -t gruvbox \
+                     --output '/tmp/schematic.pdf' \
+                     --theme default \
                      '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
                      mkdir -p /kicad_project/schematics && \
-                     cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
+                     cp /tmp/schematic.pdf '/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}_default_schematic.pdf'"
           
-          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf" ]; then
-            echo "✅ PDF schematic generated successfully"
+          if [ -f "schematics/${{ steps.verify-files.outputs.project_name }}_default_schematic.pdf" ] && [ -s "schematics/${{ steps.verify-files.outputs.project_name }}_default_schematic.pdf" ]; then
+            echo "✅ PDF schematic with default theme generated successfully"
             echo "success=true" >> $GITHUB_OUTPUT
           else
-            echo "❌ Failed to generate PDF schematic"
+            echo "❌ Failed to generate PDF schematic with default theme"
             echo "success=false" >> $GITHUB_OUTPUT
           fi
       
@@ -98,25 +193,25 @@ jobs:
       
       - name: Upload schematic outputs as artifacts
         uses: actions/upload-artifact@v4
-        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
+        if: ${{ steps.pdf-gruvbox.outputs.success == 'true' || steps.pdf-default.outputs.success == 'true' }}
         with:
           name: schematic-outputs
           path: schematics/
           retention-days: 7
       
       - name: Configure Git
-        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
+        if: ${{ steps.pdf-gruvbox.outputs.success == 'true' || steps.pdf-default.outputs.success == 'true' }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
       
       - name: Commit schematic outputs to repository
-        if: ${{ steps.pdf-temp-dir.outputs.success == 'true' }}
+        if: ${{ steps.pdf-gruvbox.outputs.success == 'true' || steps.pdf-default.outputs.success == 'true' }}
         run: |
           git add schematics/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Generate the latest schematic PDF"
+            git commit -m "Generate the latest schematic PDFs with themes"
             git push
           fi
