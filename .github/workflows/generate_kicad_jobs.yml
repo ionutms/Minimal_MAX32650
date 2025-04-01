@@ -66,7 +66,7 @@ jobs:
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
             -e HOME=/tmp/home \
-            kicad/kicad:9.0.0-amd64 \
+            kicad/kicad:8.0 \
             bash -c "mkdir -p /tmp/home/.config/kicad/9.0/colors && \
                      export HOME=/tmp/home && \
                      mkdir -p /tmp && \
