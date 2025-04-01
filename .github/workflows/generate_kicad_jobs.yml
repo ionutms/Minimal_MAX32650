@@ -73,11 +73,11 @@ jobs:
         run: |
           echo "Approach 1: Generating PDF schematic directly..."
           
-          # Run in docker with verbose logging
+          # Run in docker (without verbose flag)
           docker run --rm \
             -v ${{ github.workspace }}:/kicad_project \
             kicad/kicad:9.0 \
-            kicad-cli --verbose sch export pdf \
+            kicad-cli sch export pdf \
             --output "/kicad_project/schematics/${{ steps.verify-files.outputs.project_name }}-schematic.pdf" \
             "/kicad_project/${{ steps.verify-files.outputs.schematic_file }}"
           
