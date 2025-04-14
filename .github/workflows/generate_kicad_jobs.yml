@@ -1,7 +1,7 @@
 name: Generate KiCad Documentation
 on:
   push:
-    branches: [ main ]
+    branches: [ output_generation ]
   workflow_dispatch:
 
 jobs:
