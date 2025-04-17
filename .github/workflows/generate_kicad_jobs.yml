@@ -105,24 +105,26 @@ jobs:
           # Create docs/pictures directory if it doesn't exist
           mkdir -p docs/pictures
           
-          docker run --rm -u $(id -u):$(id -g) \
+          docker run --rm \
             -v ${{ github.workspace }}:/kicad_project \
-            -e HOME=/tmp/home \
             ionutms/ubuntu-desktop:v1.0 \
-            bash -c "mkdir -p /tmp/home && \
+            bash -c "mkdir -p /tmp/home/.config/kicad/9.0 && \
                      export HOME=/tmp/home && \
                      cd /kicad_project && \
                      mkdir -p /kicad_project/docs/pictures && \
-                     echo 'Setting permissions for 3D models directory...' && \
-                     chmod -R 755 /usr/share/3D_Models_Vault/ || echo 'Failed to set permissions on 3D models directory' && \
+                     echo 'Creating user-accessible copy of 3D models...' && \
+                     mkdir -p /tmp/3d_models && \
+                     cp -r /usr/share/3D_Models_Vault/* /tmp/3d_models/ && \
+                     echo '{\"environment\":{\"vars\":{\"KICAD9_3D_MODELS_VAULT\":\"/tmp/3d_models/\"}}}' > /tmp/home/.config/kicad/9.0/kicad_common.json && \
                      echo 'Starting PCB render...' && \
                      kicad-cli pcb render ${{ steps.verify-files.outputs.pcb_file }} \
                      -o /kicad_project/docs/pictures/${{ steps.verify-files.outputs.project_name }}_side.png \
                      --background transparent \
                      --quality high \
                      --zoom 1 \
-                     --pan "0,0,0" && \
-                     echo 'PCB render completed'"
+                     --pan \"0,0,0\" && \
+                     echo 'PCB render completed' && \
+                     chown -R $(id -u):$(id -g) /kicad_project/docs/pictures"
           
           if [ -f "docs/pictures/${{ steps.verify-files.outputs.project_name }}_side.png" ]; then
             echo "✅ PCB render generated successfully"
