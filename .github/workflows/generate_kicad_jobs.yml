@@ -142,3 +142,4 @@ jobs:
           else
             git commit -m "Update KiCad documentation (schematics and PCB renders)"
             git push origin main
+          fi
