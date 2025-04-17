@@ -15,64 +15,43 @@ jobs:
       - name: Verify project files
         id: verify-files
         run: |
-          echo "Repository contents:"
-          ls -la
-          echo "Project directory contents:"
-          ls -la minimal_max32650/ || echo "Directory not found"
-
           PROJECT_FILE=$(find . -name "*.kicad_pro" | grep -i "minimal_max32650" | head -n 1)
           SCHEMATIC_FILE=$(find . -name "*.kicad_sch" | grep -i "minimal_max32650" | head -n 1)
           PCB_FILE=$(find . -name "*.kicad_pcb" | grep -i "minimal_max32650" | head -n 1)
 
           if [ -z "$PROJECT_FILE" ]; then
-            echo "❌ KiCad project file (.kicad_pro) not found!"
             echo "project_found=false" >> $GITHUB_OUTPUT
             exit 0
           else
-            echo "✅ Found KiCad project file: $PROJECT_FILE"
             echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
             echo "project_found=true" >> $GITHUB_OUTPUT
           fi
 
           if [ -z "$SCHEMATIC_FILE" ]; then
-            echo "❌ KiCad schematic file (.kicad_sch) not found!"
             echo "schematic_found=false" >> $GITHUB_OUTPUT
           else
-            echo "✅ Found KiCad schematic file: $SCHEMATIC_FILE"
             echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
             echo "schematic_found=true" >> $GITHUB_OUTPUT
-            PROJECT_NAME=$(basename "$SCHEMATIC_FILE" .kicad_sch)
-            echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+            echo "project_name=$(basename "$SCHEMATIC_FILE" .kicad_sch)" >> $GITHUB_OUTPUT
           fi
 
           if [ -z "$PCB_FILE" ]; then
-            echo "❌ KiCad PCB file (.kicad_pcb) not found!"
             echo "pcb_found=false" >> $GITHUB_OUTPUT
           else
-            echo "✅ Found KiCad PCB file: $PCB_FILE"
             echo "pcb_file=$PCB_FILE" >> $GITHUB_OUTPUT
             echo "pcb_found=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Skip if project files not found
         if: steps.verify-files.outputs.project_found != 'true'
-        run: |
-          echo "Required KiCad project files not found. Skipping documentation generation."
-          exit 0
+        run: exit 0
 
-      - name: Create output directories with proper permissions
-        if: steps.verify-files.outputs.project_found == 'true'
-        run: |
-          mkdir -p docs/schematics docs/pictures
-          chmod -R 777 ${{ github.workspace }}
+      - name: Create output directories
+        run: mkdir -p docs/schematics docs/pictures
 
       - name: Generate PDF schematic
-        id: pdf-temp-dir
         if: steps.verify-files.outputs.schematic_found == 'true'
-        continue-on-error: true
         run: |
-          echo "Generating PDF in container's temporary directory first..."
-
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
             -e HOME=/tmp/home \
@@ -83,31 +62,17 @@ jobs:
                      kicad-cli sch export pdf \
                      --output '/tmp/schematic.pdf' \
                      '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
-                     mkdir -p /kicad_project/docs/schematics && \
                      cp /tmp/schematic.pdf '/kicad_project/docs/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
 
-          if [ -f "docs/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf" ]; then
-            echo "✅ PDF schematic generated successfully"
-            echo "success=true" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Failed to generate PDF schematic"
-            echo "success=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Render PCB 3D view
-        id: render-pcb
         if: steps.verify-files.outputs.pcb_found == 'true'
-        continue-on-error: true
         run: |
-          echo "Rendering PCB 3D view..."
-
           docker run --rm \
             -v ${{ github.workspace }}:/kicad_project \
             ionutms/ubuntu-desktop:v1.0 \
             bash -c "mkdir -p /tmp/home/.config/kicad/9.0 && \
                      export HOME=/tmp/home && \
                      cd /kicad_project && \
-                     mkdir -p /kicad_project/docs/pictures && \
                      mkdir -p /tmp/3d_models && \
                      cp -r /usr/share/3D_Models_Vault/* /tmp/3d_models/ && \
                      echo '{\"environment\":{\"vars\":{\"KICAD9_3D_MODELS_VAULT\":\"/tmp/3d_models/\"}}}' > /tmp/home/.config/kicad/9.0/kicad_common.json && \
@@ -115,38 +80,18 @@ jobs:
                      -o /kicad_project/docs/pictures/${{ steps.verify-files.outputs.project_name }}_side.png \
                      --background transparent \
                      --quality high \
-                     --zoom 1 \
-                     --pan \"0,0,0\" && \
-                     chown -R $(id -u):$(id -g) /kicad_project/docs/pictures"
-
-          if [ -f "docs/pictures/${{ steps.verify-files.outputs.project_name }}_side.png" ]; then
-            echo "✅ PCB render generated successfully"
-            echo "success=true" >> $GITHUB_OUTPUT
-          else
-            echo "❌ Failed to generate PCB render"
-            echo "success=false" >> $GITHUB_OUTPUT
-          fi
+                     --zoom 1"
 
       - name: Check for generated files
         id: check-files
         run: |
-          echo "Checking for generated output files..."
-
-          echo "Schematic PDFs:"
-          ls -la docs/schematics/ || echo "No schematics directory found"
-          PDF_COUNT=$(find docs/schematics -type f -name "*.pdf" 2>/dev/null | wc -l)
-
-          echo "PCB Renders:"
-          ls -la docs/pictures/ || echo "No pictures directory found"
-          PNG_COUNT=$(find docs/pictures -type f -name "*.png" 2>/dev/null | wc -l)
-
+          PDF_COUNT=$(find docs/schematics -type f -name "*.pdf" | wc -l)
+          PNG_COUNT=$(find docs/pictures -type f -name "*.png" | wc -l)
           TOTAL_COUNT=$((PDF_COUNT + PNG_COUNT))
 
           if [ "$TOTAL_COUNT" -gt 0 ]; then
-            echo "✅ Generated $TOTAL_COUNT output file(s) ($PDF_COUNT PDFs, $PNG_COUNT PNGs)"
             echo "files_generated=true" >> $GITHUB_OUTPUT
           else
-            echo "❌ No output files were generated"
             echo "files_generated=false" >> $GITHUB_OUTPUT
             exit 1
           fi
@@ -160,34 +105,40 @@ jobs:
             docs/pictures/
           retention-days: 7
 
-      - name: Checkout main branch for updates
+      # 🔁 FIX: Save files temporarily before switching branches
+      - name: Save generated files
+        if: steps.check-files.outputs.files_generated == 'true'
+        run: |
+          mkdir -p /tmp/kicad_outputs/schematics /tmp/kicad_outputs/pictures
+          cp -r docs/schematics/* /tmp/kicad_outputs/schematics/ || true
+          cp -r docs/pictures/* /tmp/kicad_outputs/pictures/ || true
+
+      - name: Checkout main branch for commit
         if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
-      - name: Show generated files
-        if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
+      # ✅ Restore generated files back into the workspace
+      - name: Restore files to main branch
         run: |
-          echo "Generated schematic PDFs:"
-          ls -l docs/schematics || true
-
-          echo "Generated PCB renders:"
-          ls -l docs/pictures || true
+          mkdir -p docs/schematics docs/pictures
+          cp -r /tmp/kicad_outputs/schematics/* docs/schematics/ || true
+          cp -r /tmp/kicad_outputs/pictures/* docs/pictures/ || true
+          ls -la docs/schematics/
+          ls -la docs/pictures/
 
       - name: Configure Git
-        if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
       - name: Commit outputs to main branch
-        if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
         run: |
           git add docs/schematics/ docs/pictures/
           if git diff --staged --quiet; then
-            echo "No changes to commit to main branch"
+            echo "No changes to commit"
           else
-            git commit -m "Update KiCad documentation (schematics and PCB renders) from output_generation branch"
+            git commit -m "Update KiCad documentation (schematics and PCB renders)"
             git push origin main
