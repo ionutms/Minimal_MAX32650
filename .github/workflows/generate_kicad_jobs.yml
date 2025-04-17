@@ -116,7 +116,10 @@ jobs:
                      echo 'Starting PCB render...' && \
                      kicad-cli pcb render ${{ steps.verify-files.outputs.pcb_file }} \
                      -o /kicad_project/docs/pictures/${{ steps.verify-files.outputs.project_name }}_side.png \
-                     --background transparent --quality high --rotate "-45,0,45" --zoom 1 --pan "0,0,0" && \
+                     --background transparent \
+                     --quality high \
+                     --zoom 1 \
+                     --pan "0,0,0" && \
                      echo 'PCB render completed'"
           
           if [ -f "docs/pictures/${{ steps.verify-files.outputs.project_name }}_side.png" ]; then
