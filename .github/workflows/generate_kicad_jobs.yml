@@ -177,15 +177,25 @@ jobs:
       - name: Copy generated files to main branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
         run: |
-          # Checkout the temporary branch with our outputs
-          git checkout FETCH_HEAD -- schematics/ docs/pictures/
+          # Create the directories if they don't exist
+          mkdir -p schematics docs/pictures
           
-          # Check if there are any changes to commit
-          if git diff --staged --quiet && git diff --quiet; then
-            echo "No changes to commit to main branch"
-          else
-            echo "Changes detected, will commit to main branch"
-          fi
+          # Copy files from the workspace instead of checking out
+          ls -la
+          echo "Copying generated files to main branch..."
+          
+          # Save the generated files to a temporary location
+          mkdir -p /tmp/kicad_outputs
+          cp -rf ${{ github.workspace }}/schematics/* /tmp/kicad_outputs/ || true
+          cp -rf ${{ github.workspace }}/docs/pictures/* /tmp/kicad_outputs/ || true
+          
+          # Now copy them back after checkout
+          cp -rf /tmp/kicad_outputs/* schematics/ || true
+          cp -rf /tmp/kicad_outputs/* docs/pictures/ || true
+          
+          echo "Files copied. Contents of directories:"
+          ls -la schematics/
+          ls -la docs/pictures/
       
       - name: Configure Git
         if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
