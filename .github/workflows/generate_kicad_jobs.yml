@@ -105,7 +105,6 @@ jobs:
             docs/pictures/
           retention-days: 7
 
-      # 🔁 FIX: Save files temporarily before switching branches
       - name: Save generated files
         if: steps.check-files.outputs.files_generated == 'true'
         run: |
@@ -113,21 +112,21 @@ jobs:
           cp -r docs/schematics/* /tmp/kicad_outputs/schematics/ || true
           cp -r docs/pictures/* /tmp/kicad_outputs/pictures/ || true
 
-      - name: Checkout main branch for commit
+      - name: Checkout main branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
 
-      # ✅ Restore generated files back into the workspace
       - name: Restore files to main branch
         run: |
           mkdir -p docs/schematics docs/pictures
           cp -r /tmp/kicad_outputs/schematics/* docs/schematics/ || true
           cp -r /tmp/kicad_outputs/pictures/* docs/pictures/ || true
-          ls -la docs/schematics/
-          ls -la docs/pictures/
+          echo "Final output contents:"
+          ls -la docs/schematics/ || true
+          ls -la docs/pictures/ || true
 
       - name: Configure Git
         run: |
@@ -136,7 +135,8 @@ jobs:
 
       - name: Commit outputs to main branch
         run: |
-          git add docs/schematics/ docs/pictures/
+          git add docs/schematics || true
+          git add docs/pictures || true
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
