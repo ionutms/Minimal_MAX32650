@@ -12,29 +12,43 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Verify project files
-        id: verify-files
+      - name: Find KiCad project files
+        id: find-files
         run: |
-          PROJECT_FILE=$(find . -name "*.kicad_pro" | grep -i "minimal_max32650" | head -n 1)
-          SCHEMATIC_FILE=$(find . -name "*.kicad_sch" | grep -i "minimal_max32650" | head -n 1)
-          PCB_FILE=$(find . -name "*.kicad_pcb" | grep -i "minimal_max32650" | head -n 1)
-
+          # Find all KiCad project files in the repository
+          PROJECT_FILE=$(find . -name "*.kicad_pro" | head -n 1)
+          
           if [ -z "$PROJECT_FILE" ]; then
+            echo "No KiCad project files found"
             echo "project_found=false" >> $GITHUB_OUTPUT
             exit 0
-          else
-            echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
-            echo "project_found=true" >> $GITHUB_OUTPUT
           fi
-
+          
+          # Extract project directory and name
+          PROJECT_DIR=$(dirname "$PROJECT_FILE")
+          PROJECT_NAME=$(basename "$PROJECT_FILE" .kicad_pro)
+          
+          echo "PROJECT_FILE: $PROJECT_FILE"
+          echo "PROJECT_DIR: $PROJECT_DIR"
+          echo "PROJECT_NAME: $PROJECT_NAME"
+          
+          # Find matching schematic and PCB files
+          SCHEMATIC_FILE=$(find "$PROJECT_DIR" -name "${PROJECT_NAME}.kicad_sch" | head -n 1)
+          PCB_FILE=$(find "$PROJECT_DIR" -name "${PROJECT_NAME}.kicad_pcb" | head -n 1)
+          
+          # Output the results
+          echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
+          echo "project_found=true" >> $GITHUB_OUTPUT
+          echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+          echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
+          
           if [ -z "$SCHEMATIC_FILE" ]; then
             echo "schematic_found=false" >> $GITHUB_OUTPUT
           else
             echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
             echo "schematic_found=true" >> $GITHUB_OUTPUT
-            echo "project_name=$(basename "$SCHEMATIC_FILE" .kicad_sch)" >> $GITHUB_OUTPUT
           fi
-
+          
           if [ -z "$PCB_FILE" ]; then
             echo "pcb_found=false" >> $GITHUB_OUTPUT
           else
@@ -43,14 +57,16 @@ jobs:
           fi
 
       - name: Skip if project files not found
-        if: steps.verify-files.outputs.project_found != 'true'
-        run: exit 0
+        if: steps.find-files.outputs.project_found != 'true'
+        run: |
+          echo "No KiCad project found. Skipping workflow."
+          exit 0
 
       - name: Create output directories
         run: mkdir -p docs/schematics docs/pictures
 
       - name: Generate PDF schematic
-        if: steps.verify-files.outputs.schematic_found == 'true'
+        if: steps.find-files.outputs.schematic_found == 'true'
         run: |
           docker run --rm -u $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/kicad_project \
@@ -61,11 +77,11 @@ jobs:
                      mkdir -p /tmp && \
                      kicad-cli sch export pdf \
                      --output '/tmp/schematic.pdf' \
-                     '/kicad_project/${{ steps.verify-files.outputs.schematic_file }}' && \
-                     cp /tmp/schematic.pdf '/kicad_project/docs/schematics/${{ steps.verify-files.outputs.project_name }}_schematic.pdf'"
+                     '/kicad_project/${{ steps.find-files.outputs.schematic_file }}' && \
+                     cp /tmp/schematic.pdf '/kicad_project/docs/schematics/${{ steps.find-files.outputs.project_name }}_schematic.pdf'"
 
       - name: Render PCB 3D view
-        if: steps.verify-files.outputs.pcb_found == 'true'
+        if: steps.find-files.outputs.pcb_found == 'true'
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/kicad_project \
@@ -76,8 +92,8 @@ jobs:
                      mkdir -p /tmp/3d_models && \
                      cp -r /usr/share/3D_Models_Vault/* /tmp/3d_models/ && \
                      echo '{\"environment\":{\"vars\":{\"KICAD9_3D_MODELS_VAULT\":\"/tmp/3d_models/\"}}}' > /tmp/home/.config/kicad/9.0/kicad_common.json && \
-                     kicad-cli pcb render ${{ steps.verify-files.outputs.pcb_file }} \
-                     -o /kicad_project/docs/pictures/${{ steps.verify-files.outputs.project_name }}_side.png \
+                     kicad-cli pcb render ${{ steps.find-files.outputs.pcb_file }} \
+                     -o /kicad_project/docs/pictures/${{ steps.find-files.outputs.project_name }}_side.png \
                      --background transparent \
                      --quality high \
                      --zoom 1"
