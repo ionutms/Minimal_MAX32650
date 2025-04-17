@@ -173,10 +173,10 @@ jobs:
           mkdir -p docs/schematics docs/pictures
 
           echo "Copying generated schematic PDFs..."
-          find ${{ github.workspace }}/docs/schematics -type f -name "*.pdf" -exec cp {} docs/schematics/ \;
+          find ${{ github.workspace }}/docs/schematics -type f -name "*.pdf" -exec cp '{}' docs/schematics/ \;
 
           echo "Copying generated PCB renders..."
-          find ${{ github.workspace }}/docs/pictures -type f -name "*.png" -exec cp {} docs/pictures/ \;
+          find ${{ github.workspace }}/docs/pictures -type f -name "*.png" -exec cp '{}' docs/pictures/ \;
 
           echo "Final output files:"
           ls -la docs/schematics/
