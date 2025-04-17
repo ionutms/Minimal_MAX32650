@@ -131,6 +131,7 @@ jobs:
           fi
       
       - name: Check for generated files
+        id: check-files
         run: |
           echo "Checking for generated output files..."
           
@@ -146,8 +147,10 @@ jobs:
           
           if [ "$TOTAL_COUNT" -gt 0 ]; then
             echo "✅ Generated $TOTAL_COUNT output file(s) ($PDF_COUNT PDFs, $PNG_COUNT PNGs)"
+            echo "files_generated=true" >> $GITHUB_OUTPUT
           else
             echo "❌ No output files were generated"
+            echo "files_generated=false" >> $GITHUB_OUTPUT
             exit 1
           fi
       
@@ -160,17 +163,39 @@ jobs:
             docs/pictures/
           retention-days: 7
       
+      - name: Checkout main branch for updates
+        if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      
+      - name: Copy generated files to main branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
+        run: |
+          # Checkout the temporary branch with our outputs
+          git checkout FETCH_HEAD -- schematics/ docs/pictures/
+          
+          # Check if there are any changes to commit
+          if git diff --staged --quiet && git diff --quiet; then
+            echo "No changes to commit to main branch"
+          else
+            echo "Changes detected, will commit to main branch"
+          fi
+      
       - name: Configure Git
+        if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
       
-      - name: Commit outputs to repository
+      - name: Commit outputs to main branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/output_generation' && steps.check-files.outputs.files_generated == 'true'
         run: |
           git add schematics/ docs/pictures/
           if git diff --staged --quiet; then
-            echo "No changes to commit"
+            echo "No changes to commit to main branch"
           else
-            git commit -m "Generate the latest KiCad documentation (schematics and PCB renders)"
-            git push
+            git commit -m "Update KiCad documentation (schematics and PCB renders) from output_generation branch"
+            git push origin main
           fi
