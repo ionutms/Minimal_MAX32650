@@ -3,6 +3,8 @@ on:
   push:
     branches: [ doc_workflow ]
   workflow_dispatch:
+  repository_dispatch:
+    types: [kicad-3d-models-completed]
 
 jobs:
   generate-kicad-outputs:
@@ -19,45 +21,81 @@ jobs:
       - name: Find KiCad project files
         id: find-files
         run: |
-          # Find all KiCad project files in the repository
-          PROJECT_FILE=$(find . -name "*.kicad_pro" | head -n 1)
-          
-          if [ -z "$PROJECT_FILE" ]; then
-            echo "No KiCad project files found"
-            echo "project_found=false" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          # Extract project directory and name
-          PROJECT_DIR=$(dirname "$PROJECT_FILE")
-          PROJECT_NAME=$(basename "$PROJECT_FILE" .kicad_pro)
-          
-          echo "PROJECT_FILE: $PROJECT_FILE"
-          echo "PROJECT_DIR: $PROJECT_DIR"
-          echo "PROJECT_NAME: $PROJECT_NAME"
-          
-          # Find matching schematic and PCB files
-          SCHEMATIC_FILE=$(find "$PROJECT_DIR" -name "${PROJECT_NAME}.kicad_sch" | head -n 1)
-          PCB_FILE=$(find "$PROJECT_DIR" -name "${PROJECT_NAME}.kicad_pcb" | head -n 1)
-          
-          # Output the results
-          echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
-          echo "project_found=true" >> $GITHUB_OUTPUT
-          echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
-          echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
-          
-          if [ -z "$SCHEMATIC_FILE" ]; then
-            echo "schematic_found=false" >> $GITHUB_OUTPUT
+          # Check if this was triggered by repository_dispatch and use payload data if available
+          if [ "${{ github.event_name }}" = "repository_dispatch" ] && [ -n "${{ github.event.client_payload.project_name }}" ]; then
+            echo "Using project information from repository dispatch payload"
+            PROJECT_NAME="${{ github.event.client_payload.project_name }}"
+            PROJECT_FILE="${{ github.event.client_payload.project_file }}"
+            PROJECT_DIR="${{ github.event.client_payload.project_dir }}"
+            PCB_FILE="${{ github.event.client_payload.pcb_file }}"
+            
+            # Verify files still exist
+            if [ -f "$PROJECT_FILE" ]; then
+              echo "project_found=true" >> $GITHUB_OUTPUT
+              echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
+              echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+              echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
+              
+              # Find schematic file
+              SCHEMATIC_FILE=$(find "$PROJECT_DIR" -name "${PROJECT_NAME}.kicad_sch" | head -n 1)
+              if [ -n "$SCHEMATIC_FILE" ]; then
+                echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
+                echo "schematic_found=true" >> $GITHUB_OUTPUT
+              else
+                echo "schematic_found=false" >> $GITHUB_OUTPUT
+              fi
+              
+              # Check PCB file
+              if [ -n "$PCB_FILE" ] && [ -f "$PCB_FILE" ]; then
+                echo "pcb_file=$PCB_FILE" >> $GITHUB_OUTPUT
+                echo "pcb_found=true" >> $GITHUB_OUTPUT
+              else
+                echo "pcb_found=false" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "project_found=false" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
-            echo "schematic_found=true" >> $GITHUB_OUTPUT
-          fi
-          
-          if [ -z "$PCB_FILE" ]; then
-            echo "pcb_found=false" >> $GITHUB_OUTPUT
-          else
-            echo "pcb_file=$PCB_FILE" >> $GITHUB_OUTPUT
-            echo "pcb_found=true" >> $GITHUB_OUTPUT
+            # Original file discovery logic for manual triggers
+            PROJECT_FILE=$(find . -name "*.kicad_pro" | head -n 1)
+            
+            if [ -z "$PROJECT_FILE" ]; then
+              echo "No KiCad project files found"
+              echo "project_found=false" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Extract project directory and name
+            PROJECT_DIR=$(dirname "$PROJECT_FILE")
+            PROJECT_NAME=$(basename "$PROJECT_FILE" .kicad_pro)
+            
+            echo "PROJECT_FILE: $PROJECT_FILE"
+            echo "PROJECT_DIR: $PROJECT_DIR"
+            echo "PROJECT_NAME: $PROJECT_NAME"
+            
+            # Find matching schematic and PCB files
+            SCHEMATIC_FILE=$(find "$PROJECT_DIR" -name "${PROJECT_NAME}.kicad_sch" | head -n 1)
+            PCB_FILE=$(find "$PROJECT_DIR" -name "${PROJECT_NAME}.kicad_pcb" | head -n 1)
+            
+            # Output the results
+            echo "project_file=$PROJECT_FILE" >> $GITHUB_OUTPUT
+            echo "project_found=true" >> $GITHUB_OUTPUT
+            echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+            echo "project_dir=$PROJECT_DIR" >> $GITHUB_OUTPUT
+            
+            if [ -z "$SCHEMATIC_FILE" ]; then
+              echo "schematic_found=false" >> $GITHUB_OUTPUT
+            else
+              echo "schematic_file=$SCHEMATIC_FILE" >> $GITHUB_OUTPUT
+              echo "schematic_found=true" >> $GITHUB_OUTPUT
+            fi
+            
+            if [ -z "$PCB_FILE" ]; then
+              echo "pcb_found=false" >> $GITHUB_OUTPUT
+            else
+              echo "pcb_file=$PCB_FILE" >> $GITHUB_OUTPUT
+              echo "pcb_found=true" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Skip if project files not found
