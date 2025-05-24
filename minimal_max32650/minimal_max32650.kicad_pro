@@ -529,9 +529,9 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "minimal_max32650.step",
+      "step": "minimal_max32650.glb",
       "svg": "",
-      "vrml": ""
+      "vrml": "minimal_max32650.wrl"
     },
     "page_layout_descr_file": ""
   },
