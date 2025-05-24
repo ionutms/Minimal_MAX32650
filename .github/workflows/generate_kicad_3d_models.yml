@@ -162,22 +162,3 @@ jobs:
               "ref": "${{ github.ref }}",
               "sha": "${{ github.sha }}"
             }
-
-      - name: Trigger KiCad documentation workflow
-        if: steps.check-files.outputs.files_generated == 'true'
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          event-type: kicad-3d-models-completed
-          client-payload: |
-            {
-              "source_workflow": "generate_kicad_3d_models",
-              "project_name": "${{ steps.find-files.outputs.project_name }}",
-              "project_file": "${{ steps.find-files.outputs.project_file }}",
-              "project_dir": "${{ steps.find-files.outputs.project_dir }}",
-              "pcb_file": "${{ steps.find-files.outputs.pcb_file }}",
-              "ref": "${{ github.ref }}",
-              "sha": "${{ github.sha }}",
-              "run_id": "${{ github.run_id }}"
-            }
